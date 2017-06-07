@@ -224,8 +224,8 @@ throw new ArgumentOutOfRangeException("param1", 1, 10);
 
 import { Exception } from '@brycemarshall/exception';
 throw new Exception("MyCustomerErrorType");
-throw new Exception("IncompatibleFoobar", "The Foobar {1} is incompatible with the Widget {2}", "Your Foobar", "My Widget");
-throw new Exception("IncompatibleFoobar", "The Foobar {foobar} is incompatible with the Widget {2}", { foobar: "Your Foobar", widget: "My Widget" });
+throw new Exception("IncompatibleFoobar", "The Foobar {0} is incompatible with the Widget {1}", "Your Foobar", "My Widget");
+throw new Exception("IncompatibleFoobar", "The Foobar {foobar} is incompatible with the Widget {widget}", { foobar: "Your Foobar", widget: "My Widget" });
 
 ```
 ## Contributors
