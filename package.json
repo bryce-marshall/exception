@@ -1,0 +1,24 @@
+{
+  "name": "@brycemarshall/exception",
+  "version": "1.0.0",
+  "description": "An extensible Typescript library of error types implementing the standard ECMAScript Error interface.",
+  "main": "index",
+  "types": "index",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "exception",
+    "error",
+    "custom error",
+    "typed error",
+    "custom exception",
+    "typed exception"
+  ],
+  "author": "Bryce Marshall",
+  "license": "MIT",
+  "dependencies": {
+    "@brycemarshall/string-format": "~1"
+  },
+  "devDependencies": {}
+}
