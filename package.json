@@ -1,11 +1,11 @@
 {
   "name": "@brycemarshall/exception",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "An extensible Typescript library of error types implementing the standard ECMAScript Error interface.",
   "repository": {
     "type": "git",
     "url": "https://github.com/bryce-marshall/exception"
-  },  
+  },
   "main": "index",
   "types": "index",
   "scripts": {

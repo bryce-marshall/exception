@@ -28,7 +28,7 @@ var ExceptionFactory = (function () {
         for (var _i = 1; _i < arguments.length; _i++) {
             args[_i - 1] = arguments[_i];
         }
-        return new ApplicationException(message, args);
+        return new (ApplicationException.bind.apply(ApplicationException, [void 0, message].concat(args)))();
     };
     /**
      * @method toString - Creates an instance of @type(ArgumentException).
@@ -63,7 +63,7 @@ var ExceptionFactory = (function () {
         for (var _i = 1; _i < arguments.length; _i++) {
             args[_i - 1] = arguments[_i];
         }
-        return new InvalidOperationException(message, args);
+        return new (InvalidOperationException.bind.apply(InvalidOperationException, [void 0, message].concat(args)))();
     };
     /**
      * @method toString - Creates an instance of @type(NotSupportedException).
@@ -75,7 +75,7 @@ var ExceptionFactory = (function () {
         for (var _i = 1; _i < arguments.length; _i++) {
             args[_i - 1] = arguments[_i];
         }
-        return new NotSupportedException(message, args);
+        return new (NotSupportedException.bind.apply(NotSupportedException, [void 0, message].concat(args)))();
     };
     /**
      * @method toString - Creates an instance of @type(IOException).
@@ -87,7 +87,7 @@ var ExceptionFactory = (function () {
         for (var _i = 1; _i < arguments.length; _i++) {
             args[_i - 1] = arguments[_i];
         }
-        return new IOException(message, args);
+        return new (IOException.bind.apply(IOException, [void 0, message].concat(args)))();
     };
     /**
      * @method toString - Creates an instance of @type(TimeoutException).
@@ -99,7 +99,7 @@ var ExceptionFactory = (function () {
         for (var _i = 1; _i < arguments.length; _i++) {
             args[_i - 1] = arguments[_i];
         }
-        return new TimeoutException(message, args);
+        return new (TimeoutException.bind.apply(TimeoutException, [void 0, message].concat(args)))();
     };
     /**
      * @method toString - Creates an instance of @type(Exception) with the implied type specified in 'errorName'.
@@ -112,7 +112,7 @@ var ExceptionFactory = (function () {
         for (var _i = 2; _i < arguments.length; _i++) {
             args[_i - 2] = arguments[_i];
         }
-        return new Exception(errorName, message, args);
+        return new (Exception.bind.apply(Exception, [void 0, errorName, message].concat(args)))();
     };
     return ExceptionFactory;
 }());
@@ -138,20 +138,13 @@ var Exception = (function (_super) {
         var _this = this;
         if (message && message.length > 0)
             if (args)
-                message = string_format_1.stringFormat(message, Exception.resolveRootArgs(args));
+                message = string_format_1.stringFormat.apply(void 0, [message].concat(args));
         if (!message)
             message = string_format_1.stringFormat("Error of type {0}", errorName);
         _this = _super.call(this, message) || this;
         _this.name = errorName;
         return _this;
     }
-    Exception.resolveRootArgs = function (args) {
-        if (args == null || args.length != 1)
-            return args;
-        if (Object.prototype.toString.call(args[0]) === '[object Array]')
-            return Exception.resolveRootArgs(args[0]);
-        return args;
-    };
     /**
      * @method toString - Returns the error message associated with this instance.
      */
@@ -177,7 +170,7 @@ var ApplicationException = (function (_super) {
         for (var _i = 1; _i < arguments.length; _i++) {
             args[_i - 1] = arguments[_i];
         }
-        return _super.call(this, "Application", message, args) || this;
+        return _super.apply(this, ["Application", message].concat(args)) || this;
     }
     return ApplicationException;
 }(Exception));
@@ -275,7 +268,7 @@ var InvalidOperationException = (function (_super) {
         for (var _i = 1; _i < arguments.length; _i++) {
             args[_i - 1] = arguments[_i];
         }
-        return _super.call(this, "InvalidOperation", message != null ? message : 'Operation is not valid due to the current state of the object.', args) || this;
+        return _super.apply(this, ["InvalidOperation", message != null ? message : 'Operation is not valid due to the current state of the object.'].concat(args)) || this;
     }
     return InvalidOperationException;
 }(Exception));
@@ -296,7 +289,7 @@ var NotSupportedException = (function (_super) {
         for (var _i = 1; _i < arguments.length; _i++) {
             args[_i - 1] = arguments[_i];
         }
-        return _super.call(this, "NotSupported", message != null ? message : 'Operation is not supported.', args) || this;
+        return _super.apply(this, ["NotSupported", message != null ? message : 'Operation is not supported.'].concat(args)) || this;
     }
     return NotSupportedException;
 }(Exception));
@@ -317,7 +310,7 @@ var IOException = (function (_super) {
         for (var _i = 1; _i < arguments.length; _i++) {
             args[_i - 1] = arguments[_i];
         }
-        return _super.call(this, "IO", message != null ? message : 'An IO error occurred.', args) || this;
+        return _super.apply(this, ["IO", message != null ? message : 'An IO error occurred.'].concat(args)) || this;
     }
     return IOException;
 }(Exception));
@@ -338,7 +331,7 @@ var TimeoutException = (function (_super) {
         for (var _i = 1; _i < arguments.length; _i++) {
             args[_i - 1] = arguments[_i];
         }
-        return _super.call(this, "Timeout", message != null ? message : 'Operation timed-out before completing.', args) || this;
+        return _super.apply(this, ["Timeout", message != null ? message : 'Operation timed-out before completing.'].concat(args)) || this;
     }
     return TimeoutException;
 }(Exception));

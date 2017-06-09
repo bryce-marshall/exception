@@ -71,7 +71,6 @@ export declare class Exception extends Error {
      * @param args - Optional format arguments to be applied to a string formatting template specified in 'message'.
     */
     constructor(errorName: string, message?: string, ...args: any[]);
-    private static resolveRootArgs(args);
     /**
      * @method toString - Returns the error message associated with this instance.
      */
