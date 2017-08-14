@@ -149,9 +149,14 @@ var Exception = (function (_super) {
      * Returns the error message associated with this instance.
      */
     Exception.prototype.toString = function () {
-        if (this.message != undefined && this.message != null)
-            return this.name + " Error: " + this.message;
-        return this.name + " Error";
+        var name = this.name;
+        if (typeof name != "string")
+            name = "Error";
+        else if (name !== "Error")
+            name += " Error";
+        if (typeof this.message == "string" && this.message.length > 0)
+            return name + ": " + this.message;
+        return this.name;
     };
     Object.defineProperty(Exception.prototype, "isException", {
         /**

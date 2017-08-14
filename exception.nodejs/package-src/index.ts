@@ -115,10 +115,17 @@ export class Exception extends Error {
      * Returns the error message associated with this instance.
      */
     public toString(): string {
-        if (this.message != undefined && this.message != null)
-        return this.name + " Error: " + this.message;
+        let name = this.name;
+        
+        if (typeof name != "string") 
+            name = "Error"        
+        else if (name !== "Error")
+            name += " Error";
 
-        return this.name + " Error";
+        if (typeof this.message == "string" && this.message.length > 0)
+            return name + ": " + this.message;
+
+        return this.name;
     }
 
     /**
@@ -149,7 +156,7 @@ export class Exception extends Error {
         if (error[evalProp] == undefined) {
             error[evalProp] = Exception.prototype.isException;
         }
-        
+
         return <Exception>error;
     }
 

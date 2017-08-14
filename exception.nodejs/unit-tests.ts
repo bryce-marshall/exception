@@ -119,7 +119,7 @@ export class UnitTests {
                 try {
                     throw ExceptionFactory.Custom("FooBar");
                 } catch (e) {
-                    assert(e.isException, 'e.isException failed');                    
+                    assert(e.isException, 'e.isException failed');
                     assert(e.isFooBarException, 'e.isFooBarException failed');
                     assert(Exception.isExceptionOfType(e, "FooBar") == true);
                     assert(Exception.isExceptionOfType(e, "Application") === false);
@@ -149,7 +149,30 @@ export class UnitTests {
                     assert(e.isRangeErrorException === true, "e.isRangeErrorException(e) === true failed");
                     assert(Exception.isErrorOfType(e, "RangeError") === true, "Exception.isErrorOfType(e, \"RangeError\") failed");
                 }
-            })            
+            }),
+            new UnitTest("Native Error toString test", () => {
+                try {
+                    throw new Error();
+                } catch (e) {
+                    e = Exception.convert(e);
+                    assert(e.toString() == "Error", 'e.toString() == "Error" failed');
+                }
+            }),
+            new UnitTest("Native Error toString test (with message)", () => {
+                try {
+                    throw new Error("Message");
+                } catch (e) {
+                    e = Exception.convert(e);
+                    assert(e.toString() == "Error: Message", 'e.toString() == "Error: Message" failed');
+                }
+            }),            
+            new UnitTest("Exception toString test (with message)", () => {
+                try {
+                    throw ExceptionFactory.InvalidOperation("Message");
+                } catch (e) {
+                    assert(e.toString() == "InvalidOperation Error: Message", 'e.toString() == "InvalidOperation Error: Message" failed');
+                }
+            }),            
         ];
     }
 
