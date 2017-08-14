@@ -1,4 +1,4 @@
-import { ExceptionFactory } from './package-src/index';
+import { Exception, ExceptionFactory } from './package-src/index';
 import { stringFormat } from '@brycemarshall/string-format';
 
 export interface IUnitTest {
@@ -36,6 +36,7 @@ export class UnitTest implements IUnitTest {
     }
 
     execute() {
+        console.log("Executing test \"" + this.name + "\"");
         try {
             this.fn();
             this._passed = true;
@@ -46,6 +47,9 @@ export class UnitTest implements IUnitTest {
         };
 
         console.log("Passed: " + this._passed);
+        if (!this._passed)
+            console.log(this._error.message);
+        console.log("");
         this._executed = true;
     }
 }
@@ -71,27 +75,96 @@ const assertError = (error: Error, expectedType: string, expectedMessage?: strin
 
 
 export class UnitTests {
+    public tests: IUnitTest[] = null;
 
-    static createTests(): IUnitTest[] {
-        return [
+    constructor() {
+        this.tests = [
             new UnitTest("Application No Message", () => {
-                assertError(ExceptionFactory.Application(), "Application", "Error of type Application");
+                let e = ExceptionFactory.Application();
+                assertError(e, "Application", "Error of type Application");
+                assert(e.isApplicationException);
+
             }),
             new UnitTest("InvalidOperation No Message", () => {
-                assertError(ExceptionFactory.InvalidOperation(), "InvalidOperation");
+                let e = ExceptionFactory.InvalidOperation();
+                assertError(e, "InvalidOperation");
+                assert(e.isInvalidOperationException);
             }),
             new UnitTest("InvalidOperation with Message", () => {
                 assertError(ExceptionFactory.InvalidOperation("Test invalid op"), "InvalidOperation", "Test invalid op");
             }),
             new UnitTest("Custom with Format as ...args", () => {
-                assertError(ExceptionFactory.Custom("CustomError", "Your {0} doesn't work with my {1}", "foo", "bar"), "CustomError", "Your foo doesn't work with my bar");
+                let e = ExceptionFactory.Custom("CustomError", "Your {0} doesn't work with my {1}", "foo", "bar");
+                assertError(e, "CustomError", "Your foo doesn't work with my bar");
             }),
             new UnitTest("Custom with Format as [,]", () => {
                 assertError(ExceptionFactory.Custom("CustomError", "Your {0} doesn't work with my {1}", ["foo", "bar"]), "CustomError", "Your foo doesn't work with my bar");
             }),
             new UnitTest("Custom with Format as {a,b}", () => {
                 assertError(ExceptionFactory.Custom("CustomError", "Your {a} doesn't work with my {b}", { a: "foo", b: "bar" }), "CustomError", "Your foo doesn't work with my bar");
-            })
+            }),
+            new UnitTest("ApplicationException eval type", () => {
+                try {
+                    throw ExceptionFactory.Application();
+                } catch (e) {
+                    assert(e.isException, 'e.isException failed');
+                    assert(e.isApplicationException), 'e.isApplicationException failed ';
+                    assert(Exception.isExceptionOfType(e, "Application") === true, 'Exception.isExceptionOfType(e, "Application") === true failed ');
+                    assert(!e.isIOException, '!e.isIOException failed');
+                    assert(Exception.isErrorOfType(e, "IOException") === false, 'Exception.isErrorOfType(e, "IOException") === false failed ');
+                    assert(Exception.isErrorOfType(e, "Application") === true, 'Exception.isErrorOfType(e, "Application") === true failed ');
+                }
+            }),
+            new UnitTest("CustomException eval type", () => {
+                try {
+                    throw ExceptionFactory.Custom("FooBar");
+                } catch (e) {
+                    assert(e.isException, 'e.isException failed');                    
+                    assert(e.isFooBarException, 'e.isFooBarException failed');
+                    assert(Exception.isExceptionOfType(e, "FooBar") == true);
+                    assert(Exception.isExceptionOfType(e, "Application") === false);
+                    assert(!e.isApplicationException);
+                    assert(Exception.isErrorOfType(e, "Application") === false);
+                    assert(Exception.isErrorOfType(e, "FooBar") === true);
+                }
+            }),
+            new UnitTest("IsErrorOfType test", () => {
+                try {
+                    throw new Error();
+                } catch (e) {
+                    assert(Exception.isError(e) === true, "Exception.isError(e) failed");
+                    assert(Exception.isException(e) === false, "Exception.isException(e) failed");
+                    assert(Exception.isErrorOfType(e, "Error") === true, "Exception.isErrorOfType(e, \"Error\") failed");
+                }
+            }),
+            new UnitTest("Convert Native Error test", () => {
+                try {
+                    throw new RangeError();
+                } catch (e) {
+                    assert(Exception.isError(e) === true, "Exception.isError(e) === true failed");
+                    assert(Exception.isException(e) === false, "Exception.isException(e) === false failed");
+                    e = Exception.convert(e);
+                    assert(Exception.isError(e) === true, "Exception.isError(e) === true (2) failed");
+                    assert(Exception.isException(e) === true, "Exception.isException(e) === true failed");
+                    assert(e.isRangeErrorException === true, "e.isRangeErrorException(e) === true failed");
+                    assert(Exception.isErrorOfType(e, "RangeError") === true, "Exception.isErrorOfType(e, \"RangeError\") failed");
+                }
+            })            
         ];
     }
+
+    executeAll() {
+        let count = 0;
+        let passed = 0;
+
+        for (let test of this.tests) {
+            test.execute();
+            count++;
+            if (test.passed)
+                passed++;
+        }
+
+        console.log("Executed " + count + " tests: " + passed + " passed, " + (count - passed) + " failed.");
+    }
 }
+

@@ -1,7 +1,5 @@
 import { UnitTests } from './unit-tests';
+import { ApplicationException } from './package-src/index';
 
-var unitTests = UnitTests.createTests();
+new UnitTests().executeAll();
 
-for (let test of unitTests) {
-    test.execute();
-}
