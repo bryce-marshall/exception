@@ -102,7 +102,7 @@ export class Exception extends Error {
             if (args) message = stringFormat(message, ...args);
 
         if (!message)
-            message = stringFormat("Error of type {0}", errorName);
+            message = "Error of type " + errorName;
 
         super(message);
         this.message = message;
@@ -115,7 +115,10 @@ export class Exception extends Error {
      * Returns the error message associated with this instance.
      */
     public toString(): string {
-        return this.message;
+        if (this.message != undefined && this.message != null)
+        return this.name + " Error: " + this.message;
+
+        return this.name + " Error";
     }
 
     /**

@@ -138,7 +138,7 @@ var Exception = (function (_super) {
             if (args)
                 message = string_format_1.stringFormat.apply(void 0, [message].concat(args));
         if (!message)
-            message = string_format_1.stringFormat("Error of type {0}", errorName);
+            message = "Error of type " + errorName;
         _this = _super.call(this, message) || this;
         _this.message = message;
         _this.name = errorName;
@@ -149,7 +149,9 @@ var Exception = (function (_super) {
      * Returns the error message associated with this instance.
      */
     Exception.prototype.toString = function () {
-        return this.message;
+        if (this.message != undefined && this.message != null)
+            return this.name + " Error: " + this.message;
+        return this.name + " Error";
     };
     Object.defineProperty(Exception.prototype, "isException", {
         /**
