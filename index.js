@@ -10,6 +10,7 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
+var simple_exception_1 = require("@brycemarshall/simple-exception");
 var string_format_1 = require("@brycemarshall/string-format");
 /**
  * A convenience class which exposes static factory methods for constructing common typed error instances.
@@ -137,66 +138,22 @@ var Exception = (function (_super) {
         if (message && message.length > 0)
             if (args)
                 message = string_format_1.stringFormat.apply(void 0, [message].concat(args));
-        if (!message)
-            message = "Error of type " + errorName;
-        _this = _super.call(this, message) || this;
-        _this.message = message;
-        _this.name = errorName;
-        Exception.convert(_this);
+        _this = _super.call(this, errorName, message) || this;
         return _this;
     }
-    /**
-     * Returns the error message associated with this instance.
-     */
-    Exception.prototype.toString = function () {
-        var name = this.name;
-        if (typeof name != "string")
-            name = "Error";
-        else if (name !== "Error")
-            name += " Error";
-        if (typeof this.message == "string" && this.message.length > 0)
-            return name + ": " + this.message;
-        return this.name;
-    };
-    Object.defineProperty(Exception.prototype, "isException", {
-        /**
-         * Always returns true.
-         */
-        get: function () {
-            return true;
-        },
-        enumerable: true,
-        configurable: true
-    });
     /**
      * Converts an Error object into an Exception if it is not already.
      * @param error The Error object to convert.
      */
     Exception.convert = function (error) {
-        if (error == null)
-            throw new ArgumentNullException("error");
-        if (!Exception.isError(error))
-            throw new ArgumentException("error");
-        var evalProp = "is" + error.name + "Exception";
-        // When called from the Exception contructor, the following is to work-around the Typescript ES5 compiler bug that incorrectly subclasses the Error object resulting in members defined on the immediate subclass being lost.
-        // See https://github.com/Microsoft/TypeScript/issues/10166
-        if (error["isException"] == undefined) {
-            error["isException"] = Exception.prototype.isException;
-            if (error[evalProp] == undefined)
-                error["toString"] = Exception.prototype.toString;
-        }
-        // For custom exceptions or other subclassed exceptions where the "is...Exception" property has not been defined.
-        if (error[evalProp] == undefined) {
-            error[evalProp] = Exception.prototype.isException;
-        }
-        return error;
+        return simple_exception_1.SimpleException.convert(error);
     };
     /**
      * Returns true if the specified instance is an Error object, otherwise returns false.
      * @param value The value to test.
      */
     Exception.isError = function (value) {
-        return value && typeof (value.message) == "string" && typeof (value.stack) == "string" && typeof (value.name) == "string";
+        return simple_exception_1.SimpleException.isError(value);
     };
     /**
      * Returns true if the specified instance is an Error object of the specified type, otherwise returns false.
@@ -205,7 +162,7 @@ var Exception = (function (_super) {
     Exception.isErrorOfType = function (value, errorName) {
         if (errorName == null)
             throw new ArgumentNullException("errorName");
-        return value && typeof (value.message) == "string" && typeof (value.stack) == "string" && value.name == errorName;
+        return simple_exception_1.SimpleException.isError(value) && value.name == errorName;
     };
     /**
      * Returns true if the specified instance is an Exception object of the specified type, otherwise returns false.
@@ -214,64 +171,16 @@ var Exception = (function (_super) {
     Exception.isExceptionOfType = function (value, errorName) {
         if (errorName == null)
             throw new ArgumentNullException("errorName");
-        return value && value.isException === true && value["is" + errorName + "Exception"] === true;
+        return Exception.isErrorOfType(value, errorName) && value.isException === true;
     };
     /**
      * Returns true if the specified instance is an Exception object, otherwise returns false.
      */
     Exception.isException = function (value) {
-        return value && value.isException === true;
-    };
-    /**
-     * Returns true if the value is an ApplicationException, otherwise returns false.
-     */
-    Exception.isApplicationException = function (value) {
-        return Exception.isException(value) && value.isApplicationException === true;
-    };
-    /**
-     * Returns true if the value is an ArgumentException, otherwise returns false.
-     */
-    Exception.isArgumentException = function (value) {
-        return Exception.isException(value) && value.isArgumentException === true;
-    };
-    /**
-     * Returns true if the value is an ArgumentNullException, otherwise returns false.
-     */
-    Exception.isArgumentNullException = function (value) {
-        return Exception.isException(value) && value.isArgumentNullException === true;
-    };
-    /**
-     * Returns true if the value is an isArgumentOutOfRangeException, otherwise returns false.
-     */
-    Exception.isArgumentOutOfRangeException = function (value) {
-        return Exception.isException(value) && value.isArgumentOutOfRangeException === true;
-    };
-    /**
-     * Returns true if the value is an InvalidOperationException, otherwise returns false.
-     */
-    Exception.isInvalidOperationException = function (value) {
-        return Exception.isException(value) && value.isInvalidOperationException === true;
-    };
-    /**
-     * Returns true if the value is a NotSupportedException, otherwise returns false.
-     */
-    Exception.isNotSupportedException = function (value) {
-        return Exception.isException(value) && value.isNotSupportedException === true;
-    };
-    /**
-     * Returns true if the value is an IOException, otherwise returns false.
-     */
-    Exception.isIOException = function (value) {
-        return Exception.isException(value) && value.isIOException === true;
-    };
-    /**
-     * Returns true if the value is a TimeoutException, otherwise returns false.
-     */
-    Exception.isTimeoutException = function (value) {
-        return Exception.isException(value) && value.isTimeoutException === true;
+        return simple_exception_1.SimpleException.isError(value) && value.isException === true;
     };
     return Exception;
-}(Error));
+}(simple_exception_1.SimpleException));
 exports.Exception = Exception;
 /**
  * An error type representing a general purpose application error.

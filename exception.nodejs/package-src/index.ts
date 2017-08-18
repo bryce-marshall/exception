@@ -1,3 +1,4 @@
+import { SimpleException } from '@brycemarshall/simple-exception';
 import { stringFormat } from '@brycemarshall/string-format';
 
 /**
@@ -90,7 +91,7 @@ export class ExceptionFactory {
  * The base class for custom error types implementing the standard ECMAScript Error interface.
  * Instances of this type may be instantiated directly (without subclassing) in order to create custom error instances.
  */
-export class Exception extends Error {
+export class Exception extends SimpleException {
     /**
      * Creates a new Exception instance.
      * @param errorName The name (implied type) of the Error object implemented by this instance.
@@ -101,38 +102,7 @@ export class Exception extends Error {
         if (message && message.length > 0)
             if (args) message = stringFormat(message, ...args);
 
-        if (!message)
-            message = "Error of type " + errorName;
-
-        super(message);
-        this.message = message;
-        this.name = errorName;
-
-        Exception.convert(this);
-    }
-
-    /**
-     * Returns the error message associated with this instance.
-     */
-    public toString(): string {
-        let name = this.name;
-        
-        if (typeof name != "string") 
-            name = "Error"        
-        else if (name !== "Error")
-            name += " Error";
-
-        if (typeof this.message == "string" && this.message.length > 0)
-            return name + ": " + this.message;
-
-        return this.name;
-    }
-
-    /**
-     * Always returns true.
-     */
-    get isException(): boolean {
-        return true;
+        super(errorName, message);
     }
 
     /**
@@ -140,24 +110,7 @@ export class Exception extends Error {
      * @param error The Error object to convert.
      */
     static convert(error: Error): Exception {
-        if (error == null) throw new ArgumentNullException("error");
-        if (!Exception.isError(error)) throw new ArgumentException("error");
-        let evalProp = "is" + error.name + "Exception";
-
-        // When called from the Exception contructor, the following is to work-around the Typescript ES5 compiler bug that incorrectly subclasses the Error object resulting in members defined on the immediate subclass being lost.
-        // See https://github.com/Microsoft/TypeScript/issues/10166
-        if (error["isException"] == undefined) {
-            (<any>error)["isException"] = Exception.prototype.isException;
-            if (error[evalProp] == undefined) // Don't reassign the toString method on native Error instances.
-                (<any>error)["toString"] = Exception.prototype.toString;
-        }
-
-        // For custom exceptions or other subclassed exceptions where the "is...Exception" property has not been defined.
-        if (error[evalProp] == undefined) {
-            error[evalProp] = Exception.prototype.isException;
-        }
-
-        return <Exception>error;
+        return SimpleException.convert(error);
     }
 
     /**
@@ -165,7 +118,7 @@ export class Exception extends Error {
      * @param value The value to test.
      */
     static isError(value: any) {
-        return value && typeof (value.message) == "string" && typeof (value.stack) == "string" && typeof (value.name) == "string";
+        return SimpleException.isError(value);
     }
 
     /**
@@ -174,7 +127,7 @@ export class Exception extends Error {
      */
     static isErrorOfType(value: any, errorName: string) {
         if (errorName == null) throw new ArgumentNullException("errorName");
-        return value && typeof (value.message) == "string" && typeof (value.stack) == "string" && value.name == errorName;
+        return SimpleException.isError(value) && value.name == errorName;
     }
 
     /**
@@ -183,70 +136,14 @@ export class Exception extends Error {
      */
     static isExceptionOfType(value: any, errorName: string) {
         if (errorName == null) throw new ArgumentNullException("errorName");
-        return value && value.isException === true && value["is" + errorName + "Exception"] === true;
+        return Exception.isErrorOfType(value, errorName) && value.isException === true;
     }
 
     /**
      * Returns true if the specified instance is an Exception object, otherwise returns false.
      */
     static isException(value: any): boolean {
-        return value && value.isException === true;
-    }
-
-    /**
-     * Returns true if the value is an ApplicationException, otherwise returns false.
-     */
-    static isApplicationException(value: any): boolean {
-        return Exception.isException(value) && value.isApplicationException === true;
-    }
-
-    /**
-     * Returns true if the value is an ArgumentException, otherwise returns false.
-     */
-    static isArgumentException(value: any): boolean {
-        return Exception.isException(value) && value.isArgumentException === true;
-    }
-
-    /**
-     * Returns true if the value is an ArgumentNullException, otherwise returns false.
-     */
-    static isArgumentNullException(value: any): boolean {
-        return Exception.isException(value) && value.isArgumentNullException === true;
-    }
-
-    /**
-     * Returns true if the value is an isArgumentOutOfRangeException, otherwise returns false.
-     */
-    static isArgumentOutOfRangeException(value: any): boolean {
-        return Exception.isException(value) && value.isArgumentOutOfRangeException === true;
-    }
-
-    /**
-     * Returns true if the value is an InvalidOperationException, otherwise returns false.
-     */
-    static isInvalidOperationException(value: any): boolean {
-        return Exception.isException(value) && value.isInvalidOperationException === true;
-    }
-
-    /**
-     * Returns true if the value is a NotSupportedException, otherwise returns false.
-     */
-    static isNotSupportedException(value: any): boolean {
-        return Exception.isException(value) && value.isNotSupportedException === true;
-    }
-
-    /**
-     * Returns true if the value is an IOException, otherwise returns false.
-     */
-    static isIOException(value: any): boolean {
-        return Exception.isException(value) && value.isIOException === true;
-    }
-
-    /**
-     * Returns true if the value is a TimeoutException, otherwise returns false.
-     */
-    static isTimeoutException(value: any): boolean {
-        return Exception.isException(value) && value.isTimeoutException === true;
+        return SimpleException.isError(value) && value.isException === true;
     }
 }
 

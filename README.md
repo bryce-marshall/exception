@@ -2,6 +2,9 @@
 
 An extensible Typescript library of error types implementing the standard ECMAScript Error interface.
 
+See also @brycemarshall/simple-exception (https://www.npmjs.com/package/@brycemarshall/simple-exception) which is a lighter-weight package which may be
+better suited to some redistributable packages and yet which remains compatible with this fully-featured library.
+
 ## Installation
 
 npm install @brycemarshall/exception
@@ -9,6 +12,7 @@ npm install @brycemarshall/exception
 ## The module exports the following types:
 
 ```ts
+import { SimpleException } from '@brycemarshall/simple-exception';
 /**
  * A convenience class which exposes static factory methods for constructing common typed error instances.
  */
@@ -72,7 +76,7 @@ export declare class ExceptionFactory {
  * The base class for custom error types implementing the standard ECMAScript Error interface.
  * Instances of this type may be instantiated directly (without subclassing) in order to create custom error instances.
  */
-export declare class Exception extends Error {
+export declare class Exception extends SimpleException {
     /**
      * Creates a new Exception instance.
      * @param errorName The name (implied type) of the Error object implemented by this instance.
@@ -80,14 +84,6 @@ export declare class Exception extends Error {
      * @param args Optional format arguments to be applied to a string formatting template specified in 'message'.
     */
     constructor(errorName: string, message?: string, ...args: any[]);
-    /**
-     * Returns the error message associated with this instance.
-     */
-    toString(): string;
-    /**
-     * Always returns true.
-     */
-    readonly isException: boolean;
     /**
      * Converts an Error object into an Exception if it is not already.
      * @param error The Error object to convert.
@@ -112,38 +108,6 @@ export declare class Exception extends Error {
      * Returns true if the specified instance is an Exception object, otherwise returns false.
      */
     static isException(value: any): boolean;
-    /**
-     * Returns true if the value is an ApplicationException, otherwise returns false.
-     */
-    static isApplicationException(value: any): boolean;
-    /**
-     * Returns true if the value is an ArgumentException, otherwise returns false.
-     */
-    static isArgumentException(value: any): boolean;
-    /**
-     * Returns true if the value is an ArgumentNullException, otherwise returns false.
-     */
-    static isArgumentNullException(value: any): boolean;
-    /**
-     * Returns true if the value is an isArgumentOutOfRangeException, otherwise returns false.
-     */
-    static isArgumentOutOfRangeException(value: any): boolean;
-    /**
-     * Returns true if the value is an InvalidOperationException, otherwise returns false.
-     */
-    static isInvalidOperationException(value: any): boolean;
-    /**
-     * Returns true if the value is a NotSupportedException, otherwise returns false.
-     */
-    static isNotSupportedException(value: any): boolean;
-    /**
-     * Returns true if the value is an IOException, otherwise returns false.
-     */
-    static isIOException(value: any): boolean;
-    /**
-     * Returns true if the value is a TimeoutException, otherwise returns false.
-     */
-    static isTimeoutException(value: any): boolean;
 }
 /**
  * An error type representing a general purpose application error.
@@ -301,6 +265,9 @@ Not all examples are shown.
 import { ApplicationException } from '@brycemarshall/exception';
 throw new ApplicationException("An error occurred");
 
+import { ArgumentException } from '@brycemarshall/exception';
+throw new ArgumentException("param1");
+
 import { ArgumentNullException } from '@brycemarshall/exception';
 throw new ArgumentNullException("param1");
 
@@ -340,7 +307,7 @@ try {
 }
 catch (e) {
     if (e.isFoobarException)
-        console.log("Caught a TimeoutException");
+        console.log("Caught a FoobarException");
 }
 ```
 ```ts
@@ -349,7 +316,7 @@ try {
 }
 catch (e) {
     if (Exception.isExceptionOfType(e, "Foobar")
-        console.log("Caught a TimeoutException");
+        console.log("Caught a FoobarException");
 }
 ```
 ## Usage - Native Error Type Identification
