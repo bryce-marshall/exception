@@ -17,9 +17,11 @@ export class ExceptionFactory {
     /**
      * Creates a new ArgumentException instance.
      * @param parameterName The name of the invalid parameter.
+     * @param message An optional error message (which may be a string formatting template).
+     * @param args Optional format arguments to be applied to a string formatting template specified in 'message'.
      */
-    public static Argument(parameterName: string): ArgumentException {
-        return new ArgumentException(parameterName);
+    public static Argument(parameterName: string, message?: string, ...args: any[]): ArgumentException {
+        return new ArgumentException(parameterName, message, ...args);
     }
 
     /**
@@ -100,7 +102,7 @@ export class Exception extends SimpleException {
     */
     constructor(errorName: string, message?: string, ...args: any[]) {
         if (message && message.length > 0)
-            if (args) message = stringFormat(message, ...args);
+            if (args && args.length > 0) message = stringFormat(message, ...args);
 
         super(errorName, message);
     }
@@ -169,16 +171,53 @@ export class ApplicationException extends Exception {
 }
 
 /**
+ * The base class for argument exception types.
+ */
+export abstract class ArgumentExceptionBase extends Exception {
+    private _pname: string;
+    /**
+     * Creates a new ArgumentException instance.
+     * @param errorName The name (implied type) of the Error object implemented by this instance.
+     * @param parameterName The name of the invalid parameter.
+     * @param defaultMessage The default message describing the problem with the parameter.
+     * @param message An optional error message (which may be a string formatting template).
+     * @param args Optional format arguments to be applied to a string formatting template specified in 'message'.
+    */
+    constructor(errorName: string, defaultMessage: string, parameterName: string, message?: string, ...args: any[]) {
+        if (parameterName == null) throw new ArgumentNullException("parameterName");
+        if (message != null && message.length > 0)
+            defaultMessage += (" " + message);
+
+        super(errorName, defaultMessage, ...args);
+        this._pname = parameterName;
+
+        // Workaround prototype issues when extending Error object
+        if (this["parameterName"] == undefined) {
+            (<any>this)["parameterName"] = parameterName;
+        }
+    }
+
+    /**
+     * Returns the name of the invalid parameter.
+     */
+    get parameterName(): string {
+        return this._pname;
+    }
+}
+
+/**
  * The error raised when an invalid argument is passed to a function.
  */
-export class ArgumentException extends Exception implements Exception {
+export class ArgumentException extends ArgumentExceptionBase {
     /**
      * Creates a new ArgumentException instance.
      * @param parameterName The name of the invalid parameter.
+     * @param message An optional error message (which may be a string formatting template).
+     * @param args Optional format arguments to be applied to a string formatting template specified in 'message'.
     */
-    constructor(parameterName: string) {
+    constructor(parameterName: string, message?: string, ...args: any[]) {
         if (parameterName == null) throw new ArgumentNullException("parameterName");
-        super("Argument", 'The argument "{0}" is invalid.', parameterName);
+        super("Argument", stringFormat('The argument "{0}" is invalid.', parameterName), parameterName, message, ...args);
     }
 
     /**
@@ -192,14 +231,14 @@ export class ArgumentException extends Exception implements Exception {
 /**
  * The error raised when an argument with a null value is illegally passed to a function.
  */
-export class ArgumentNullException extends Exception {
+export class ArgumentNullException extends ArgumentExceptionBase {
     /**
      * Creates a new ArgumentNullException instance.
      * @param parameterName The name of the null parameter.
     */
     constructor(parameterName: string) {
         if (parameterName == null) throw new ArgumentNullException("parameterName");
-        super("ArgumentNull", 'The argument "{0}" cannot be null.', parameterName);
+        super("ArgumentNull", stringFormat('The argument "{0}" cannot be null.', parameterName), parameterName);
     }
 
     /**
@@ -213,7 +252,7 @@ export class ArgumentNullException extends Exception {
 /**
  * The error raised when an argument passed to a function is outside of the legal range of allowable values required by the function.
  */
-export class ArgumentOutOfRangeException extends Exception {
+export class ArgumentOutOfRangeException extends ArgumentExceptionBase {
     /**
      * Creates a new ArgumentOutOfRangeException instance.
      * @param parameterName The name of the invalid parameter.
@@ -235,7 +274,7 @@ export class ArgumentOutOfRangeException extends Exception {
         else
             message = 'The value of the argument "{0}" is outside of the allowable range.'
 
-        super("ArgumentOutOfRange", message, parameterName, min, max);
+        super("ArgumentOutOfRange", stringFormat(message, parameterName, min, max), parameterName);
     }
 
     private static formatBound(value: any): any {

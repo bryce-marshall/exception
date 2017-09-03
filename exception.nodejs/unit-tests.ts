@@ -60,6 +60,14 @@ const assert = (condition, message?: string) => {
     }
 };
 
+const assertEqual = (expectedValue, actualValue, message?: string) => {
+    let m = "AssertEqual failed";
+    if (message)
+        m = m + ": " + message;
+    console.log('Expected Value: "' + expectedValue + '"; Actual Value: "' + actualValue + '"');
+    assert(expectedValue === actualValue, m);
+};
+
 const assertError = (error: Error, expectedType: string, expectedMessage?: string) => {
     console.log('Expected Type: "' + expectedType + '"; Actual Type: "' + error.name + '"');
     if (expectedMessage != null)
@@ -93,6 +101,31 @@ export class UnitTests {
             new UnitTest("InvalidOperation with Message", () => {
                 assertError(ExceptionFactory.InvalidOperation("Test invalid op"), "InvalidOperation", "Test invalid op");
             }),
+            new UnitTest("Argument No Message", () => {
+                let e = ExceptionFactory.Argument("param1");
+                assertError(e, "Argument", 'The argument "param1" is invalid.');
+                assert(e.isArgumentException);
+                assertEqual("param1", e.parameterName, "e.parameterName");
+
+            }),
+            new UnitTest("Argument with Message", () => {
+                let e = ExceptionFactory.Argument("param1", "The {0} is required.", "foo");
+                assertError(e, "Argument", 'The argument "param1" is invalid. The foo is required.');
+                assert(e.isArgumentException);
+                assertEqual("param1", e.parameterName, "e.parameterName");
+            }),
+            new UnitTest("ArgumentNull", () => {
+                let e = ExceptionFactory.ArgumentNull("param1");
+                assertError(e, "ArgumentNull", 'The argument "param1" cannot be null.');
+                assert(e.isArgumentNullException);
+                assertEqual("param1", e.parameterName, "e.parameterName");
+            }),
+            new UnitTest("ArgumentOutOfRange", () => {
+                let e = ExceptionFactory.ArgumentOutOfRange("param1");
+                assertError(e, "ArgumentOutOfRange", 'The value of the argument "param1" is outside of the allowable range.');
+                assert(e.isArgumentOutOfRangeException);
+                assertEqual("param1", e.parameterName, "e.parameterName");
+            }),            
             new UnitTest("Custom with Format as ...args", () => {
                 let e = ExceptionFactory.Custom("CustomError", "Your {0} doesn't work with my {1}", "foo", "bar");
                 assertError(e, "CustomError", "Your foo doesn't work with my bar");
@@ -165,14 +198,14 @@ export class UnitTests {
                     e = Exception.convert(e);
                     assert(e.toString() == "Error: Message", 'e.toString() == "Error: Message" failed');
                 }
-            }),            
+            }),
             new UnitTest("Exception toString test (with message)", () => {
                 try {
                     throw ExceptionFactory.InvalidOperation("Message");
                 } catch (e) {
                     assert(e.toString() == "InvalidOperation Error: Message", 'e.toString() == "InvalidOperation Error: Message" failed');
                 }
-            }),            
+            }),
         ];
     }
 

@@ -12,8 +12,10 @@ export declare class ExceptionFactory {
     /**
      * Creates a new ArgumentException instance.
      * @param parameterName The name of the invalid parameter.
+     * @param message An optional error message (which may be a string formatting template).
+     * @param args Optional format arguments to be applied to a string formatting template specified in 'message'.
      */
-    static Argument(parameterName: string): ArgumentException;
+    static Argument(parameterName: string, message?: string, ...args: any[]): ArgumentException;
     /**
      * Creates a new ArgumentNullException instance.
      * @param parameterName The name of the null parameter.
@@ -111,14 +113,35 @@ export declare class ApplicationException extends Exception {
     readonly isApplicationException: boolean;
 }
 /**
+ * The base class for argument exception types.
+ */
+export declare abstract class ArgumentExceptionBase extends Exception {
+    private _pname;
+    /**
+     * Creates a new ArgumentException instance.
+     * @param errorName The name (implied type) of the Error object implemented by this instance.
+     * @param parameterName The name of the invalid parameter.
+     * @param defaultMessage The default message describing the problem with the parameter.
+     * @param message An optional error message (which may be a string formatting template).
+     * @param args Optional format arguments to be applied to a string formatting template specified in 'message'.
+    */
+    constructor(errorName: string, defaultMessage: string, parameterName: string, message?: string, ...args: any[]);
+    /**
+     * Returns the name of the invalid parameter.
+     */
+    readonly parameterName: string;
+}
+/**
  * The error raised when an invalid argument is passed to a function.
  */
-export declare class ArgumentException extends Exception implements Exception {
+export declare class ArgumentException extends ArgumentExceptionBase {
     /**
      * Creates a new ArgumentException instance.
      * @param parameterName The name of the invalid parameter.
+     * @param message An optional error message (which may be a string formatting template).
+     * @param args Optional format arguments to be applied to a string formatting template specified in 'message'.
     */
-    constructor(parameterName: string);
+    constructor(parameterName: string, message?: string, ...args: any[]);
     /**
      * Always returns true.
      */
@@ -127,7 +150,7 @@ export declare class ArgumentException extends Exception implements Exception {
 /**
  * The error raised when an argument with a null value is illegally passed to a function.
  */
-export declare class ArgumentNullException extends Exception {
+export declare class ArgumentNullException extends ArgumentExceptionBase {
     /**
      * Creates a new ArgumentNullException instance.
      * @param parameterName The name of the null parameter.
@@ -141,7 +164,7 @@ export declare class ArgumentNullException extends Exception {
 /**
  * The error raised when an argument passed to a function is outside of the legal range of allowable values required by the function.
  */
-export declare class ArgumentOutOfRangeException extends Exception {
+export declare class ArgumentOutOfRangeException extends ArgumentExceptionBase {
     /**
      * Creates a new ArgumentOutOfRangeException instance.
      * @param parameterName The name of the invalid parameter.

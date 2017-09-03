@@ -33,9 +33,15 @@ var ExceptionFactory = (function () {
     /**
      * Creates a new ArgumentException instance.
      * @param parameterName The name of the invalid parameter.
+     * @param message An optional error message (which may be a string formatting template).
+     * @param args Optional format arguments to be applied to a string formatting template specified in 'message'.
      */
-    ExceptionFactory.Argument = function (parameterName) {
-        return new ArgumentException(parameterName);
+    ExceptionFactory.Argument = function (parameterName, message) {
+        var args = [];
+        for (var _i = 2; _i < arguments.length; _i++) {
+            args[_i - 2] = arguments[_i];
+        }
+        return new (ArgumentException.bind.apply(ArgumentException, [void 0, parameterName, message].concat(args)))();
     };
     /**
      * Creates a new ArgumentNullException instance.
@@ -136,7 +142,7 @@ var Exception = (function (_super) {
         }
         var _this = this;
         if (message && message.length > 0)
-            if (args)
+            if (args && args.length > 0)
                 message = string_format_1.stringFormat.apply(void 0, [message].concat(args));
         _this = _super.call(this, errorName, message) || this;
         return _this;
@@ -213,6 +219,50 @@ var ApplicationException = (function (_super) {
 }(Exception));
 exports.ApplicationException = ApplicationException;
 /**
+ * The base class for argument exception types.
+ */
+var ArgumentExceptionBase = (function (_super) {
+    __extends(ArgumentExceptionBase, _super);
+    /**
+     * Creates a new ArgumentException instance.
+     * @param errorName The name (implied type) of the Error object implemented by this instance.
+     * @param parameterName The name of the invalid parameter.
+     * @param defaultMessage The default message describing the problem with the parameter.
+     * @param message An optional error message (which may be a string formatting template).
+     * @param args Optional format arguments to be applied to a string formatting template specified in 'message'.
+    */
+    function ArgumentExceptionBase(errorName, defaultMessage, parameterName, message) {
+        var args = [];
+        for (var _i = 4; _i < arguments.length; _i++) {
+            args[_i - 4] = arguments[_i];
+        }
+        var _this = this;
+        if (parameterName == null)
+            throw new ArgumentNullException("parameterName");
+        if (message != null && message.length > 0)
+            defaultMessage += (" " + message);
+        _this = _super.apply(this, [errorName, defaultMessage].concat(args)) || this;
+        _this._pname = parameterName;
+        // Workaround prototype issues when extending Error object
+        if (_this["parameterName"] == undefined) {
+            _this["parameterName"] = parameterName;
+        }
+        return _this;
+    }
+    Object.defineProperty(ArgumentExceptionBase.prototype, "parameterName", {
+        /**
+         * Returns the name of the invalid parameter.
+         */
+        get: function () {
+            return this._pname;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    return ArgumentExceptionBase;
+}(Exception));
+exports.ArgumentExceptionBase = ArgumentExceptionBase;
+/**
  * The error raised when an invalid argument is passed to a function.
  */
 var ArgumentException = (function (_super) {
@@ -220,12 +270,18 @@ var ArgumentException = (function (_super) {
     /**
      * Creates a new ArgumentException instance.
      * @param parameterName The name of the invalid parameter.
+     * @param message An optional error message (which may be a string formatting template).
+     * @param args Optional format arguments to be applied to a string formatting template specified in 'message'.
     */
-    function ArgumentException(parameterName) {
+    function ArgumentException(parameterName, message) {
+        var args = [];
+        for (var _i = 2; _i < arguments.length; _i++) {
+            args[_i - 2] = arguments[_i];
+        }
         var _this = this;
         if (parameterName == null)
             throw new ArgumentNullException("parameterName");
-        _this = _super.call(this, "Argument", 'The argument "{0}" is invalid.', parameterName) || this;
+        _this = _super.apply(this, ["Argument", string_format_1.stringFormat('The argument "{0}" is invalid.', parameterName), parameterName, message].concat(args)) || this;
         return _this;
     }
     Object.defineProperty(ArgumentException.prototype, "isArgumentException", {
@@ -239,7 +295,7 @@ var ArgumentException = (function (_super) {
         configurable: true
     });
     return ArgumentException;
-}(Exception));
+}(ArgumentExceptionBase));
 exports.ArgumentException = ArgumentException;
 /**
  * The error raised when an argument with a null value is illegally passed to a function.
@@ -254,7 +310,7 @@ var ArgumentNullException = (function (_super) {
         var _this = this;
         if (parameterName == null)
             throw new ArgumentNullException("parameterName");
-        _this = _super.call(this, "ArgumentNull", 'The argument "{0}" cannot be null.', parameterName) || this;
+        _this = _super.call(this, "ArgumentNull", string_format_1.stringFormat('The argument "{0}" cannot be null.', parameterName), parameterName) || this;
         return _this;
     }
     Object.defineProperty(ArgumentNullException.prototype, "isArgumentNullException", {
@@ -268,7 +324,7 @@ var ArgumentNullException = (function (_super) {
         configurable: true
     });
     return ArgumentNullException;
-}(Exception));
+}(ArgumentExceptionBase));
 exports.ArgumentNullException = ArgumentNullException;
 /**
  * The error raised when an argument passed to a function is outside of the legal range of allowable values required by the function.
@@ -297,7 +353,7 @@ var ArgumentOutOfRangeException = (function (_super) {
         }
         else
             message = 'The value of the argument "{0}" is outside of the allowable range.';
-        _this = _super.call(this, "ArgumentOutOfRange", message, parameterName, min, max) || this;
+        _this = _super.call(this, "ArgumentOutOfRange", string_format_1.stringFormat(message, parameterName, min, max), parameterName) || this;
         return _this;
     }
     ArgumentOutOfRangeException.formatBound = function (value) {
@@ -314,7 +370,7 @@ var ArgumentOutOfRangeException = (function (_super) {
         configurable: true
     });
     return ArgumentOutOfRangeException;
-}(Exception));
+}(ArgumentExceptionBase));
 exports.ArgumentOutOfRangeException = ArgumentOutOfRangeException;
 /**
  * The error raised when a requested operation is not valid due to the state of the implementing object when the operation was initiated.
